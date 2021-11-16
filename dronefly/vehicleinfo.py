@@ -4,10 +4,11 @@ import time
 import cloud
 
 
+vehicledata = {"QRCODEDATA":"null"}
+def vdatafetch(condition,value):
+    vehicledata[condition]=value
+
 def info(vehicle):
-
-
-    
 
     s = {"APMV":str(vehicle.version),
         "type":vehicle.version.release_type(),
@@ -57,13 +58,16 @@ def get_distance_meters(targetLocation,currentLocation):
 
     return math.sqrt((dLon*dLon)+(dLat*dLat))*1.113195e5
 
-def vehicle_Land(vehicle,VehicleMode):
-    vehicle.mode = VehicleMode("LAND")
-    while True:
-        print(" Altitude: ", vehicle.location.global_relative_frame.alt*0.05)
-        # Break and return from function just below target altitude.
-        if vehicle.location.global_relative_frame.alt <=0.05:
-            cloud.__cloudupload("drive",0)
-            vehicle.close() 
-            break
-        time.sleep(1)
+def vehicle_Land(vehicle,VehicleMode,qrcodeid):
+    print(vehicledata["QRCODEDATA"], qrcodeid)
+    if vehicledata["QRCODEDATA"] == qrcodeid:
+        vehicle.mode = VehicleMode("LAND")
+        while True:
+            print(" Altitude: ", vehicle.location.global_relative_frame.alt*0.55)
+            # Break and return from function just below target altitude.
+            if vehicle.location.global_relative_frame.alt <=0.55:
+                cloud.__cloudupload("drive",0)
+                vehicle.close() 
+                break
+            time.sleep(1)
+

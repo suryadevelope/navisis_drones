@@ -71,39 +71,3 @@ def video_feed():
 app.run(host='127.0.0.1', port='5000', debug=False)
 
 
-
-
-
-import os
-import requests
-import json
-from requests_http_signature import HTTPSignatureAuth
-from base64 import b64decode
-key_id = os.environ.get('R3_ACCESS_KEY_ID')
-key_secret_id = os.environ.get('R3_SECRET_ACCESS_KEY')
-body = {"query": "query { login { id email devices { items { id name }}}}"}
-host = 'api.remote.it'
-url_path = '/graphql/v1'
-content_type_header = 'application/json'
-content_length_header = str(len(body))
-headers = {
-    'host': host,
-    'path': url_path,
-    'content-type': content_type_header,
-    'content-length': content_length_header,
-}
-response = requests.post('https://' + host + url_path,
-                         json=body,
-                         auth=HTTPSignatureAuth(algorithm="hmac-sha256",
-                                                key=b64decode(key_secret_id),
-                                                key_id=key_id,
-                                                headers=[
-                                                    '(request-target)', 'host',
-                                                    'date', 'content-type',
-                                                    'content-length'
-                                                ]),
-                         headers=headers)
-if response.status_code == 200:
-    print(response.text)
-else:
-    print(response.status_code)

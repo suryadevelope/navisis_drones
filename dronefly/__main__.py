@@ -3,12 +3,16 @@ import cloud
 from dronekit import connect, VehicleMode, LocationGlobalRelative
 import vehicleinfo
 import time
+import stream
 
+
+time.sleep(5)
+streamurl = stream.startStream()
 print('Connecting to vehicle on: /dev/ttyAMA0' )
 vehicle = connect("/dev/ttyAMA0", wait_ready=True, baud=921600)
 vehicle.wait_ready(True, raise_exception=False)
 
-
+time.sleep(1)
 vehicle.airspeed = 5
 vehicle.groundspeed = 50
 vehicle.parameters['LAND_SPEED'] = 40 ##Descent speed of 30cm/s
@@ -22,6 +26,7 @@ vehicle.parameters["WPNAV_SPEED"]=200
 
 vinfo = vehicleinfo.info(vehicle)
 cloud.__cloudupload("dinfo",vinfo)
+cloud.__cloudupload("streamurl",streamurl)
 cloudd = cloud.Cloudint()
 clouddata = {}
 clouddata["ddl"]={}
@@ -29,8 +34,8 @@ clouddata['alt'] = cloudd[0]
 clouddata['dcl'] = cloudd[1]
 clouddata['ddl']["lat"] = cloudd[2].split(",")[0]
 clouddata['ddl']["lng"] = cloudd[2].split(",")[1]
-clouddata['dinfo'] = cloudd[3]
-clouddata['drive'] = cloudd[4]
+clouddata['drive'] = cloudd[3]
+clouddata['qrid'] = cloudd[4]
 
 def vehicle_goto(lat,long,alt):
     print("Take off complete")
@@ -50,11 +55,20 @@ def vehicle_goto(lat,long,alt):
         
         if currentDistance<=distanceToTargetLocation*.05:
             print("Reached target location.")
-            vehicleinfo.vehicle_Land(vehicle,VehicleMode)
             time.sleep(2)
             break
             
         time.sleep(3)
+    point1 = LocationGlobalRelative(float(lat),float(long), 2.0)
+    vehicle.simple_goto(point1)
+    while True:
+        print(" Altitude: ", vehicle.location.global_relative_frame.alt)
+        # Break and return from function just below target altitude.
+        if vehicle.location.global_relative_frame.alt <= 2.0:
+            print("Reached QR target altitude")
+            vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
+            break
+        time.sleep(1)
 
 def vehiclestart():
     def arm_and_takeoff(aTargetAltitude):
@@ -93,8 +107,8 @@ def __updatefromcloud(type,data):# This function important for cloud onchange
    
     if type == "drive":
             clouddata["drive"] = data
-
-    if clouddata["drive"] == 0:
+    print(clouddata["drive"])
+    if int(clouddata["drive"]) == 0:
         if type == "alt":
             clouddata["alt"] = data
         elif type == "dcl":
@@ -102,10 +116,11 @@ def __updatefromcloud(type,data):# This function important for cloud onchange
         elif type == "ddl":
             clouddata['ddl']["lat"] = data.split(",")[0]
             clouddata['ddl']["lng"] = data.split(",")[1]
-        elif type == "dinfo":
-            clouddata["dinfo"] = data
+        elif type == "qrid":
+            print(type,data)
+            clouddata["qrid"] = data
+            stream.streamfetchdata("cloudqrid",clouddata["qrid"])
     if type == "drive":
-        if data == 1:
+        if int(data) == 1:
             vehiclestart()
-
-    print(clouddata['ddl']['lat'])
+            print(clouddata['ddl']['lat'])

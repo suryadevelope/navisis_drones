@@ -4,7 +4,7 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative
 from getmac import get_mac_address
 # Python Imports
 import time
-
+import stream
 import __main__
 
 from datetime import datetime
@@ -42,9 +42,10 @@ def Cloudint():
     daltitude = db.child("device/"+macaddress+"/altitude").get().val()
     dcl = db.child("device/"+macaddress+"/dcl").get().val()
     ddl = db.child("device/"+macaddress+"/ddl").get().val()
-    dinfo = db.child("device/"+macaddress+"/dinfo").get().val()
+    #dinfo = db.child("device/"+macaddress+"/dinfo").get().val()
     ddrive = db.child("device/"+macaddress+"/drive").get().val()
     Dstatus = db.child("device/"+macaddress+"/Dstatus").get().val()
+    QRid = db.child("device/"+macaddress+"/id").get().val()
 
     if daltitude == None:
         db.child("device/"+macaddress+"/altitude").set("0")
@@ -53,13 +54,19 @@ def Cloudint():
         db.child("device/"+macaddress+"/dinfo").set("null")
         db.child("device/"+macaddress+"/drive").set(0)
         db.child("device/"+macaddress+"/Dstatus").set(["ONLINE",formatted_time_in_utc])
+        db.child("device/"+macaddress+"/id").set("null")
+        time.sleep(0.2)
 
     if int(ddrive )== 1:
         db.child("device/"+macaddress+"/drive").set(0)
+        ddrive = 0
 
     time.sleep(1)
     if str(Dstatus[0]) == "OFFLINE":
         db.child("device/"+macaddress+"/Dstatus").set(["ONLINE",formatted_time_in_utc])
+        Dstatus[0] = "ONLINE"
+        Dstatus[1] = formatted_time_in_utc
+        time.sleep(0.2)
         
 
     if daltitude != None:
@@ -80,12 +87,15 @@ def Cloudint():
                 elif message["path"] == "/ddl":
                     ddl = message["data"]
                     __main__.__updatefromcloud("ddl",ddl)
-                elif message["path"] == "/dinfo":
-                    dinfo = message["data"]
-                    __main__.__updatefromcloud("dinfo",dinfo)
+                # elif message["path"] == "/dinfo":
+                #     dinfo = message["data"]
+                #     __main__.__updatefromcloud("dinfo",dinfo)
                 elif message["path"] == "/drive":
                     ddrive = message["data"]
                     __main__.__updatefromcloud("drive",ddrive)
+                elif message["path"] == "/id":
+                    qrcodeid = message["data"]
+                    __main__.__updatefromcloud("qrid",qrcodeid)
                 elif message["path"] == "/Dstatus/0":
                     Dstatus = message["data"]
                     if str(Dstatus) == "OFFLINE":
@@ -95,7 +105,8 @@ def Cloudint():
             
 
         my_stream = db.child("device/"+macaddress).stream(stream_handler)
-    return [daltitude,dcl,ddl,dinfo,ddrive]
+    stream.streamfetchdata("cloudqrid",QRid)
+    return [daltitude,dcl,ddl,ddrive,QRid]
 
     ############################INIT DEVICE#####################################
 

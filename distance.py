@@ -1,52 +1,43 @@
-import RPi.GPIO as GPIO
-import time
- 
-#GPIO Mode (BOARD / BCM)
-GPIO.setmode(GPIO.BCM)
- 
-#set GPIO Pins
-GPIO_TRIGGER = 18
-GPIO_ECHO = 24
- 
-#set GPIO direction (IN / OUT)
-GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
-GPIO.setup(GPIO_ECHO, GPIO.IN)
- 
-def distance():
-    # set Trigger to HIGH
-    GPIO.output(GPIO_TRIGGER, True)
- 
-    # set Trigger after 0.01ms to LOW
-    time.sleep(0.00001)
-    GPIO.output(GPIO_TRIGGER, False)
- 
-    StartTime = time.time()
-    StopTime = time.time()
- 
-    # save StartTime
-    while GPIO.input(GPIO_ECHO) == 0:
-        StartTime = time.time()
- 
-    # save time of arrival
-    while GPIO.input(GPIO_ECHO) == 1:
-        StopTime = time.time()
- 
-    # time difference between start and arrival
-    TimeElapsed = StopTime - StartTime
-    # multiply with the sonic speed (34300 cm/s)
-    # and divide by 2, because there and back
-    distance = (TimeElapsed * 34300) / 2
- 
-    return distance
- 
-if __name__ == '__main__':
-    try:
-        while True:
-            dist = distance()
-            print ("Measured Distance = %.1f cm" % dist)
-            time.sleep(1)
- 
-        # Reset by pressing CTRL + C
-    except KeyboardInterrupt:
-        print("Measurement stopped by User")
-        GPIO.cleanup()
+import dronekit 
+import RPi.GPIO as GPIO 
+
+import time 
+
+
+GPIO.setwarnings(False) 
+GPIO.setmode(GPIO.BCM) 
+
+TRIG = 18  # Trigger pin of the Ultrasonic Sensor 
+ECHO = 23 #Echo pin of the Ultrasonic Sensor 
+GPIO.setup(TRIG,GPIO.OUT) 
+GPIO.setup(ECHO,GPIO.IN) 
+
+#Connects to the vehicle using serial po
+    
+def measure(): 
+    dist1=250 
+    GPIO.output(TRIG, True) 
+    time.sleep(0.00001) 
+    GPIO.output(TRIG, False) 
+    echo_state=0 
+    
+    while echo_state == 0: 
+        echo_state = GPIO.input(ECHO) 
+        pulse_start = time.time() 
+    while GPIO.input(ECHO)==1: 
+        pulse_end = time.time() 
+    pulse_duration = pulse_end - pulse_start 
+    distance = pulse_duration * 17150 
+    distance = round(distance, 2) 
+    if(distance<250 and distance>5): #To filter out junk values 
+        dist1=distance 
+        #Sends measured distance(dist1) and orientation(0) as a mavlink message. 
+    else:
+        dist1 = 0
+    return dist1 # Main code 
+    
+while True: 
+    print("started")
+    d=measure() 
+    time.sleep(0.1) 
+    print(d)

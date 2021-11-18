@@ -46,6 +46,7 @@ def Cloudint():
     ddrive = db.child("device/"+macaddress+"/drive").get().val()
     Dstatus = db.child("device/"+macaddress+"/Dstatus").get().val()
     QRid = db.child("device/"+macaddress+"/id").get().val()
+    vconnect = db.child("device/"+macaddress+"/vconnect").get().val()
 
     if daltitude == None:
         db.child("device/"+macaddress+"/altitude").set("0")
@@ -55,7 +56,12 @@ def Cloudint():
         db.child("device/"+macaddress+"/drive").set(0)
         db.child("device/"+macaddress+"/Dstatus").set(["ONLINE",formatted_time_in_utc])
         db.child("device/"+macaddress+"/id").set("null")
+        db.child("device/"+macaddress+"/vconnect").set(0)
         time.sleep(0.2)
+
+    if int(vconnect)==1:
+        db.child("device/"+macaddress+"/vconnect").set(0)
+        vconnect = 0
 
     if int(ddrive )== 1:
         db.child("device/"+macaddress+"/drive").set(0)

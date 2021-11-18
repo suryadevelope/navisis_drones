@@ -59,12 +59,13 @@ def startStream():
     if json.loads(response.text)["connection"]:
         return json.loads(response.text)["connection"]["proxy"]+"/video"
 
-ret,img = "null","null"
-
+streamdata={"ret":"null","img":"null"}
 def camerastream():
     while True:
         # get bounding box coords and data
         ret,img = cap.read()
+        streamdata["ret"] = ret
+        streamdata["img"] = img
         if not ret:
             break;
         else:
@@ -137,10 +138,10 @@ def camerastream():
 
 def video_stream():
     while True:       
-        if not ret:
+        if not streamdata["ret"]:
             break;
         else:
-            ret, buffer = cv2.imencode('.jpeg',img)
+            ret, buffer = cv2.imencode('.jpeg',streamdata["img"])
             img = buffer.tobytes()
             yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + img +b'\r\n')
            

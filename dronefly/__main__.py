@@ -4,17 +4,27 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative
 import vehicleinfo
 import time
 import stream
-
+import sys
 
 time.sleep(5)
 streamurl = stream.startStream()
+cloudd = cloud.Cloudint()
+vehicle = "null"
 print('Connecting to vehicle on: /dev/ttyAMA0' )
-vehicle = connect("/dev/ttyAMA0", wait_ready=True, baud=921600)
-vehicle.wait_ready(True, raise_exception=False)
+try:
+    vehicle = connect("/dev/ttyAMA0", wait_ready=True, baud=921600)
+    vehicle.wait_ready(True, raise_exception=False)
+except:
+    print("error connecting")
+    cloud.__cloudupload("vconnect",0)
+    cloud.__cloudupload("device_error",[404,"Device connection error restart to fix, check supply or contact customer care"])
+    sys.exit()
 
 time.sleep(1)
+cloud.__cloudupload("vconnect",1)
 vehicle.airspeed = 5
 vehicle.groundspeed = 50
+print(vehicle)
 vehicle.parameters['LAND_SPEED'] = 40 ##Descent speed of 30cm/s
 vehicle.parameters["WPNAV_SPEED"]=200
 
@@ -27,7 +37,7 @@ vehicle.parameters["WPNAV_SPEED"]=200
 vinfo = vehicleinfo.info(vehicle)
 cloud.__cloudupload("dinfo",vinfo)
 cloud.__cloudupload("streamurl",streamurl)
-cloudd = cloud.Cloudint()
+
 clouddata = {}
 clouddata["ddl"]={}
 clouddata['alt'] = cloudd[0]
@@ -59,12 +69,12 @@ def vehicle_goto(lat,long,alt):
             break
             
         time.sleep(3)
-    point1 = LocationGlobalRelative(float(lat),float(long), 2.0)
+    point1 = LocationGlobalRelative(float(lat),float(long), 1.0)
     vehicle.simple_goto(point1)
     while True:
         print(" Altitude: ", vehicle.location.global_relative_frame.alt)
         # Break and return from function just below target altitude.
-        if vehicle.location.global_relative_frame.alt <= 2.0:
+        if vehicle.location.global_relative_frame.alt <= 1.0:
             print("Reached QR target altitude")
             vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
             break
@@ -100,8 +110,8 @@ def vehiclestart():
         cloud.__cloudupload("drive",0)
         cloud.__cloudupload("device_error",[400,"Distance to location is below 1 meter"])
         return
-    arm_and_takeoff(float(clouddata['alt']))
-    
+    #arm_and_takeoff(float(clouddata['alt']))
+    vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
 
 def __updatefromcloud(type,data):# This function important for cloud onchange
    

@@ -59,11 +59,11 @@ def get_distance_meters(targetLocation,currentLocation):
     return math.sqrt((dLon*dLon)+(dLat*dLat))*1.113195e5
 
 def vehicle_Land(vehicle,VehicleMode,qrcodeid):
-    print(vehicledata["QRCODEDATA"], qrcodeid)
-    if vehicledata["QRCODEDATA"] == qrcodeid:
+    #print("surya land",str(vehicledata["QRCODEDATA"]) ,str(qrcodeid),str(vehicledata["QRCODEDATA"]) == str(qrcodeid))
+    if str(vehicledata["QRCODEDATA"]) == str(qrcodeid):
         vehicle.mode = VehicleMode("LAND")
         while True:
-            print(" Altitude: ", vehicle.location.global_relative_frame.alt*0.55)
+            print("Land Altitude: ", vehicle.location.global_relative_frame.alt*0.55)
             # Break and return from function just below target altitude.
             if vehicle.location.global_relative_frame.alt <=0.55:
                 cloud.__cloudupload("drive",0)

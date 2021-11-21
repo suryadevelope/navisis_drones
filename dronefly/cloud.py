@@ -120,3 +120,4 @@ def __cloudupload(path,data):
     if firebase:
         ignorecloud["status"] = 1
         db.child("device/"+macaddress+"/"+path).set(data)
+        time.sleep(2)

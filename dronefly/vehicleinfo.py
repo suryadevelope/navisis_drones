@@ -59,7 +59,7 @@ def get_distance_meters(targetLocation,currentLocation):
     return math.sqrt((dLon*dLon)+(dLat*dLat))*1.113195e5
 
 def vehicle_Land(vehicle,VehicleMode,qrcodeid):
-    #print("surya land",str(vehicledata["QRCODEDATA"]) ,str(qrcodeid),str(vehicledata["QRCODEDATA"]) == str(qrcodeid))
+    print("surya land",str(vehicledata["QRCODEDATA"]) ,str(qrcodeid),str(vehicledata["QRCODEDATA"]) == str(qrcodeid))
     if str(vehicledata["QRCODEDATA"]) == str(qrcodeid):
         vehicle.mode = VehicleMode("LAND")
         while True:

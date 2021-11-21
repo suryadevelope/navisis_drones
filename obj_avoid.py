@@ -4,7 +4,9 @@ import time
 import RPi.GPIO as GPIO 
 from threading import Thread
 import math
-import multiprocessing
+from datetime import datetime
+
+
 
 GPIO.setwarnings(False) 
 GPIO.setmode(GPIO.BCM) 
@@ -48,11 +50,11 @@ GPIO.setup(BACKECHO,GPIO.IN)
 
 
 def send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration=0):
-    global distanceToTargetLocation
+    #global distanceToTargetLocation
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
         0,       # time_boot_ms (not used)
         0, 0,    # target system, target component
-        mavutil.mavlink.MAV_FRAME_BODY_OFFSET_NED, # frame Needs to be MAV_FRAME_BODY_OFFSET_NED for forward/back left/right control.
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame Needs to be MAV_FRAME_BODY_OFFSET_NED for forward/back left/right control.
         0b0000111111000111, # type_mask
         0, 0, 0, # x, y, z positions (not used)
         velocity_x, velocity_y, velocity_z, # m/s
@@ -67,7 +69,7 @@ def send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration=0):
             distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_relative_frame)
 
             vehicle.parameters["WPNAV_SPEED"]=100
-            vehicle.groundspeed=5
+            vehicle.groundspeed=20
             time.sleep(1)
             vehicle.simple_goto(point1)
         time.sleep(1)
@@ -80,13 +82,13 @@ def get_distance_meters(targetLocation,currentLocation):
 
 connection_string = "/dev/ttyAMA0"#args.connect
 
-takeoff_alt = 1.5
+takeoff_alt = 1.8
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=921600)
-latt = "17.461851"
-long = "78.59291"
+latt = "17.461805"
+long = "78.592865"
 vehicle.airspeed = 5
-vehicle.groundspeed = 50
+vehicle.groundspeed = 20
 vehicle.parameters['LAND_SPEED'] = 40 ##Descent speed of 30cm/s
 vehicle.parameters["WPNAV_SPEED"]=100
 vehicleheading = vehicle.heading
@@ -230,31 +232,31 @@ def backsonar():
 
 def objavoid():
     while True:
-        # print("========================================")
-        # print("sonar front",front)
-        # print("sonar back",back)
-        # print("sonar right",right)
-        # print("sonar left",left)
-        # print("*****************************************")
-        if vehicle.location.global_relative_frame.alt >= takeoff_alt * 0.95:
+        print("========================================")
+        print("sonar front",front)
+        print("sonar back",back)
+        print("sonar right",right)
+        print("sonar left",left)
+        print("*****************************************")
+        if vehicle.location.global_relative_frame.alt <= takeoff_alt * 0.95:
             if (front<=obstacledist):
                 if (right>obstacledist):
                     print("obstacle front go right")
                     velocity_x = 0
-                    velocity_y = 1
+                    velocity_y = 2
                     velocity_z = 0
                     duration = 1
                     send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                 elif (left>obstacledist):
                     print("obstacle front and right go left")
                     velocity_x = 0
-                    velocity_y = -1
+                    velocity_y = -2
                     velocity_z = 0
                     duration = 1
                     send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                 elif (right<=obstacledist) and (left<=obstacledist):
                     print("front,right and left obstacle go back ")
-                    velocity_x = -1
+                    velocity_x = -2
                     velocity_y = 0
                     velocity_z = 0
                     duration = 1
@@ -268,11 +270,6 @@ def objavoid():
 
                 time.sleep(1)
 
-# multiprocessing.Process(target=rightsonar, args=()).run()
-# multiprocessing.Process(target=leftsonar, args=()).run()
-# multiprocessing.Process(target=frontsonar, args=()).run()
-# multiprocessing.Process(target=backsonar, args=()).run()
-# multiprocessing.Process(target=objavoid, args=()).run()
 
 Thread(target = rightsonar).start()
 Thread(target = leftsonar).start()
@@ -280,7 +277,8 @@ Thread(target = frontsonar).start()
 Thread(target = backsonar).start()
 Thread(target = objavoid).start()
 
-arm_drone()
+
+#arm_drone()
 time.sleep(2)
 print("Vehicle going to the location")
 point1 = LocationGlobalRelative(float(latt),float(long), takeoff_alt)
@@ -288,14 +286,12 @@ distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_re
 vehicle.simple_goto(point1)
 checkheading = 0
 while True:
-   
-
     vehicleheading = vehicle.heading   
     currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
     if checkheading==0:
         vehicleheading = vehicle.heading
         checkheading = 1
-    #print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
+    print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
     if currentDistance<distanceToTargetLocation*.02:
         print("Reached target location.")
         time.sleep(2)
@@ -303,7 +299,7 @@ while True:
            
     time.sleep(2)
 
-
+time.sleep(10)
 vehicle.mode = VehicleMode("LAND")
 while True:
     print(" Altitude: ", vehicle.location.global_relative_frame.alt)

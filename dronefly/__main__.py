@@ -5,6 +5,7 @@ import vehicleinfo
 import time
 import stream
 import sys
+import obstacle_avoid
 
 time.sleep(5)
 streamurl = stream.startStream()
@@ -15,7 +16,7 @@ try:
     vehicle = connect("/dev/ttyAMA0", wait_ready=True, baud=921600)
     vehicle.wait_ready(True, raise_exception=False)
 except:
-    print("error connecting")
+    print("error connecting to vehicle")
     cloud.__cloudupload("vconnect",0)
     cloud.__cloudupload("device_error",[404,"Device connection error restart to fix, check supply or contact customer care"])
     sys.exit()
@@ -23,10 +24,14 @@ except:
 time.sleep(1)
 cloud.__cloudupload("vconnect",1)
 vehicle.airspeed = 5
+time.sleep(0.2)
 vehicle.groundspeed = 50
+time.sleep(0.2)
 print(vehicle)
 vehicle.parameters['LAND_SPEED'] = 40 ##Descent speed of 30cm/s
-vehicle.parameters["WPNAV_SPEED"]=200
+time.sleep(0.2)
+vehicle.parameters["WPNAV_SPEED"]=150
+time.sleep(0.2)
 
 # #Create a message listener using the decorator.
 # @vehicle.on_message('*')
@@ -47,6 +52,7 @@ clouddata['ddl']["lng"] = cloudd[2].split(",")[1]
 clouddata['drive'] = cloudd[3]
 clouddata['qrid'] = cloudd[4]
 
+#obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
 def vehicle_goto(lat,long,alt):
     print("Take off complete")
     # Hover for 10 seconds
@@ -55,8 +61,12 @@ def vehicle_goto(lat,long,alt):
     point1 = LocationGlobalRelative(float(lat),float(long), alt)
     distanceToTargetLocation = vehicleinfo.get_distance_meters(point1,vehicle.location.global_relative_frame)
     vehicle.simple_goto(point1)
+    checkheading=0
 
-    while True:        
+    while True:
+        if checkheading<=5:
+            obstacle_avoid.obstacledataupdate(alt,vehicle.heading,lat,long)
+            checkheading = checkheading+1
         currentDistance = vehicleinfo.get_distance_meters(point1,vehicle.location.global_relative_frame)
         print("current distance: ", currentDistance,distanceToTargetLocation*.05,currentDistance<distanceToTargetLocation*.05)
         print("time",currentDistance/2)
@@ -74,7 +84,7 @@ def vehicle_goto(lat,long,alt):
     while True:
         print(" Altitude: ", vehicle.location.global_relative_frame.alt)
         # Break and return from function just below target altitude.
-        if vehicle.location.global_relative_frame.alt <= 1.0:
+        if vehicle.location.global_relative_frame.alt <= 2.0:
             print("Reached QR target altitude")
             vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
             break
@@ -110,8 +120,8 @@ def vehiclestart():
         cloud.__cloudupload("drive",0)
         cloud.__cloudupload("device_error",[400,"Distance to location is below 1 meter"])
         return
-    #arm_and_takeoff(float(clouddata['alt']))
-    vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
+    arm_and_takeoff(float(clouddata['alt']))
+    #vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
 
 def __updatefromcloud(type,data):# This function important for cloud onchange
    

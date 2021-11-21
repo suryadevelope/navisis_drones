@@ -6,7 +6,12 @@ import requests
 import json
 from requests_http_signature import HTTPSignatureAuth
 from base64 import b64decode
+from datetime import datetime
 import time
+
+now = datetime.now()
+current_time = now.strftime("%H:%M:%S")
+print("GMT: "+time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT")
 
 connectionid = "null"
 video = cv2.VideoCapture(0)
@@ -41,7 +46,7 @@ def start():
 
 Thread(target = start).start()
 
-time.sleep(20)
+time.sleep(10)
 
 url = "https://api.remot3.it/apv/v27/device/connect"
 
@@ -73,37 +78,9 @@ headers = {
   'host': 'api.remot3.it',
   'content-type': 'application/json',
     'content-length': content_length_header,
-    "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw"
-}
+    "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw",
+    "Date":str(time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT")
+    }
 response = requests.post(url,auth=auth1,json=payload, headers=headers)
 connectionid = json.loads(response.text)["connectionid"]
-print(json.loads(response.text),json.loads(response.text)["connection"]["proxyURL"]+"/video")
-
-try:
-    print("ok")
-except KeyboardInterrupt:
-    key_id = "D7P5VZB6KJCISDNSARN4"
-    key_secret_id = "D7f+jzFBmRJos75Q9B1iJdDEu6EiSWuMdFUQPgaI"
-    payload = {
-        "deviceaddress":"80:00:00:00:01:1C:06:BE",
-        "connectionid":connectionid
-        }
-    auth1 =HTTPSignatureAuth(algorithm="hmac-sha256",
-            key=b64decode(key_secret_id),
-            key_id=key_id,
-            headers=[
-                '(request-target)', 'host',
-                'date', 'content-type',
-                'content-length'
-            ])
-
-    print(str(auth1))
-    headers = {
-    'path': "/apv/v27/device/connect/stop",
-    'host': 'api.remot3.it',
-    'content-type': 'application/json',
-        'content-length': content_length_header,
-        "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw"
-    }
-    response = requests.post(url,auth=auth1,json=payload, headers=headers)
-    print(response)
+print(json.loads(response.text)["connection"]["proxyURL"]+"/video")

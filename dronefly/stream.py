@@ -10,6 +10,12 @@ import pyzbar.pyzbar as pyzbar
 from threading import Thread
 import time
 import vehicleinfo
+from datetime import datetime
+
+
+now = datetime.now()
+current_time = now.strftime("%H:%M:%S")
+print("GMT: "+time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT")
 
 cap = cv2.VideoCapture(0)
 
@@ -51,11 +57,14 @@ def startStream():
     'host': 'api.remot3.it',
     'content-type': 'application/json',
         'content-length': content_length_header,
+        "Date":str(time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT"),
         "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw"
     }
     response = requests.post(url,auth=auth1,json=payload, headers=headers)
 
-    print(json.loads(response.text)["connection"]["proxy"],"/video")
+    print(response.headers,json.loads(response.text)["connection"]["proxy"]+"/video")
+    for key in response.request.headers:
+        print(key, ": ", response.request.headers[key])
     if json.loads(response.text)["connection"]:
         return json.loads(response.text)["connection"]["proxy"]+"/video"
 

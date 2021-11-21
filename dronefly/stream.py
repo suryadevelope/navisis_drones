@@ -1,5 +1,5 @@
 import cv2
-import numpy
+import numpy as np
 from flask import Flask, render_template, Response, stream_with_context, request
 import numpy as np
 import requests
@@ -76,8 +76,9 @@ def camerastream():
         streamdata["img"] = img
         if not ret:
             break;
-        else:
-        
+        elif np.sum(img) == 0:
+            break;
+        else:        
             data, bbox, _ = detector.detectAndDecode(img)
             decodedObjects = pyzbar.decode(img)
 
@@ -139,20 +140,14 @@ def camerastream():
             if(cv2.waitKey(1) == ord("q")):
                 break
             # free camera object and exit
+            ret, buffer = cv2.imencode('.jpeg',img)
+            img = buffer.tobytes()
+            yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + img +b'\r\n')
             
     cap.release()
     cv2.destroyAllWindows()
 
-
-def video_stream():
-    while True:       
-        if not streamdata["ret"]:
-            break;
-        else:
-            ret, buffer = cv2.imencode('.jpeg',streamdata["img"])
-            img = buffer.tobytes()
-            yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + img +b'\r\n')
-           
+    
 
 def streamINT():  
     @app.route('/camera')
@@ -163,7 +158,7 @@ def streamINT():
 
     @app.route('/video')
     def video():
-        return Response(video_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        return Response(camerastream(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
     app.run(host='127.0.0.1', port='5000', debug=False)
   

@@ -33,7 +33,7 @@ def startStream():
     url = "https://api.remot3.it/apv/v27/device/connect"
 
     payload = {
-    "deviceaddress":"80:00:00:00:01:1C:06:BE",
+    "deviceaddress":"80:00:00:00:01:1C:06:C2",
     "wait": "true",
     "hostip": "0.0.0.0"
     }
@@ -51,7 +51,6 @@ def startStream():
                 'content-length'
             ])
 
-    print(str(auth1))
     headers = {
     'path': "/apv/v27/device/connect",
     'host': 'api.remot3.it',

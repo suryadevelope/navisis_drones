@@ -51,7 +51,7 @@ time.sleep(10)
 url = "https://api.remot3.it/apv/v27/device/connect"
 
 payload = {
-  "deviceaddress":"80:00:00:00:01:1C:06:BE",
+  "deviceaddress":"80:00:00:00:01:1C:06:C2",
   "wait": "true",
   "hostip": "0.0.0.0"
 }
@@ -83,4 +83,5 @@ headers = {
     }
 response = requests.post(url,auth=auth1,json=payload, headers=headers)
 connectionid = json.loads(response.text)["connectionid"]
-print(json.loads(response.text)["connection"]["proxyURL"]+"/video")
+print(json.loads(response.text),json.loads(response.text)["connection"]["proxyURL"]+"/video")
+

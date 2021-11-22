@@ -106,6 +106,10 @@ def Cloudint():
                     Dstatus = message["data"]
                     if str(Dstatus) == "OFFLINE":
                         __cloudupload("Dstatus",["ONLINE",formatted_time_in_utc])
+                elif message["path"] == "/vconnect":
+                    vconnect = message["data"]
+                    if int(vconnect) == 0:
+                        __cloudupload("vconnect",1)
             else:
                 ignorecloud["status"]=0
             

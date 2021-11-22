@@ -30,45 +30,46 @@ def streamfetchdata(condition,val):
 
 
 def startStream():
-    url = "https://api.remot3.it/apv/v27/device/connect"
+    Thread(target = camerastream).start()
+    # url = "https://api.remot3.it/apv/v27/device/connect"
 
-    payload = {
-    "deviceaddress":"80:00:00:00:01:1C:06:C2",
-    "wait": "true",
-    "hostip": "0.0.0.0"
-    }
+    # payload = {
+    # "deviceaddress":"80:00:00:00:01:1C:06:C2",
+    # "wait": "true",
+    # "hostip": "0.0.0.0"
+    # }
 
 
-    content_length_header = str(len(json.dumps(payload)))
-    key_id = "D7P5VZB6KJCISDNSARN4"
-    key_secret_id = "D7f+jzFBmRJos75Q9B1iJdDEu6EiSWuMdFUQPgaI"
-    auth1 =HTTPSignatureAuth(algorithm="hmac-sha256",
-            key=b64decode(key_secret_id),
-            key_id=key_id,
-            headers=[
-                '(request-target)', 'host',
-                'date', 'content-type',
-                'content-length'
-            ])
+    # content_length_header = str(len(json.dumps(payload)))
+    # key_id = "D7P5VZB6KJCISDNSARN4"
+    # key_secret_id = "D7f+jzFBmRJos75Q9B1iJdDEu6EiSWuMdFUQPgaI"
+    # auth1 =HTTPSignatureAuth(algorithm="hmac-sha256",
+    #         key=b64decode(key_secret_id),
+    #         key_id=key_id,
+    #         headers=[
+    #             '(request-target)', 'host',
+    #             'date', 'content-type',
+    #             'content-length'
+    #         ])
 
-    headers = {
-    'path': "/apv/v27/device/connect",
-    'host': 'api.remot3.it',
-    'content-type': 'application/json',
-        'content-length': content_length_header,
-        "Date":str(time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT"),
-        "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw"
-    }
-    response = requests.post(url,auth=auth1,json=payload, headers=headers)
+    # headers = {
+    # 'path': "/apv/v27/device/connect",
+    # 'host': 'api.remot3.it',
+    # 'content-type': 'application/json',
+    #     'content-length': content_length_header,
+    #     "Date":str(time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT"),
+    #     "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw"
+    # }
+    # response = requests.post(url,auth=auth1,json=payload, headers=headers)
 
-    print(response.headers,json.loads(response.text)["connection"]["proxy"]+"/video")
-    for key in response.request.headers:
-        print(key, ": ", response.request.headers[key])
-    if json.loads(response.text)["connection"]:
-        return json.loads(response.text)["connection"]["proxy"]+"/video"
+    # print(response.headers,json.loads(response.text)["connection"]["proxy"]+"/video")
+    # if json.loads(response.text)["connection"]:
+    #     return json.loads(response.text)["connection"]["proxy"]+"/video"
+    return ""
 
 streamdata={"ret":"null","img":"null"}
 def camerastream():
+
     while True:
         # get bounding box coords and data
         ret,img = cap.read()
@@ -140,14 +141,20 @@ def camerastream():
             if(cv2.waitKey(1) == ord("q")):
                 break
             # free camera object and exit
-            ret, buffer = cv2.imencode('.jpeg',img)
-            img = buffer.tobytes()
-            yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + img +b'\r\n')
+            
             
     cap.release()
     cv2.destroyAllWindows()
 
-    
+
+def streamcamera():
+    while True:
+        if not streamdata["ret"]:
+            break;
+        else:
+            ret, buffer = cv2.imencode('.jpeg',streamdata["img"])
+            img = buffer.tobytes()
+            yield (b' --frame\r\n' b'Content-type: imgae/jpeg\r\n\r\n' + img +b'\r\n')
 
 def streamINT():  
     @app.route('/camera')
@@ -158,12 +165,12 @@ def streamINT():
 
     @app.route('/video')
     def video():
-        return Response(camerastream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        return Response(streamcamera(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
     app.run(host='127.0.0.1', port='5000', debug=False)
   
 
-Thread(target = camerastream).start()
+
 time.sleep(5)
 Thread(target = streamINT).start()
 

@@ -7,9 +7,7 @@ import stream
 import sys
 import obstacle_avoid
 
-time.sleep(5)
-streamurl = stream.startStream()
-cloudd = cloud.Cloudint()
+
 vehicle = "null"
 print('Connecting to vehicle on: /dev/ttyAMA0' )
 try:
@@ -22,6 +20,8 @@ except:
     sys.exit()
 
 time.sleep(1)
+cloudd = cloud.Cloudint()
+time.sleep(2)
 cloud.__cloudupload("vconnect",1)
 vehicle.airspeed = 5
 time.sleep(0.2)
@@ -30,7 +30,7 @@ time.sleep(0.2)
 print(vehicle)
 vehicle.parameters['LAND_SPEED'] = 40 ##Descent speed of 30cm/s
 time.sleep(0.2)
-vehicle.parameters["WPNAV_SPEED"]=150
+vehicle.parameters["WPNAV_SPEED"]=100
 time.sleep(0.2)
 
 # #Create a message listener using the decorator.
@@ -41,7 +41,7 @@ time.sleep(0.2)
 
 vinfo = vehicleinfo.info(vehicle)
 cloud.__cloudupload("dinfo",vinfo)
-cloud.__cloudupload("streamurl",streamurl)
+#cloud.__cloudupload("streamurl",streamurl)
 
 clouddata = {}
 clouddata["ddl"]={}
@@ -52,7 +52,7 @@ clouddata['ddl']["lng"] = cloudd[2].split(",")[1]
 clouddata['drive'] = cloudd[3]
 clouddata['qrid'] = cloudd[4]
 
-#obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
+
 def vehicle_goto(lat,long,alt):
     print("Take off complete")
     # Hover for 10 seconds
@@ -62,14 +62,15 @@ def vehicle_goto(lat,long,alt):
     distanceToTargetLocation = vehicleinfo.get_distance_meters(point1,vehicle.location.global_relative_frame)
     vehicle.simple_goto(point1)
     checkheading=0
-
+   
     while True:
         if checkheading<=5:
             obstacle_avoid.obstacledataupdate(alt,vehicle.heading,lat,long)
             checkheading = checkheading+1
         currentDistance = vehicleinfo.get_distance_meters(point1,vehicle.location.global_relative_frame)
-        print("current distance: ", currentDistance,distanceToTargetLocation*.05,currentDistance<distanceToTargetLocation*.05)
-        print("time",currentDistance/2)
+        #print("current distance: ", currentDistance,distanceToTargetLocation*.05,currentDistance<distanceToTargetLocation*.05)
+        #print("time",currentDistance/2)
+        obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
         string = str(vehicle.location.global_relative_frame.lat)+","+str(vehicle.location.global_relative_frame.lon)
         cloud.__cloudupload("dcl",string+","+str(currentDistance)+","+str(distanceToTargetLocation))
         
@@ -79,6 +80,7 @@ def vehicle_goto(lat,long,alt):
             break
             
         time.sleep(3)
+    streamurl = stream.startStream()
     point1 = LocationGlobalRelative(float(lat),float(long), 1.0)
     vehicle.simple_goto(point1)
     while True:

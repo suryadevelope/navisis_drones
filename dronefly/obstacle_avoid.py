@@ -8,7 +8,7 @@ from threading import Thread
 GPIO.setwarnings(False) 
 GPIO.setmode(GPIO.BCM) 
 
-obstacledist = 120
+obstacledist = 70
 vehicleheading = 0
 
 RIGHTTRIG = 18  # Trigger pin of the Ultrasonic Sensor 
@@ -62,6 +62,10 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
     obstacledata['ddl']["lng"] = long
 
     def send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration=0):
+        global right
+        global left
+        global front
+        global back
         #global distanceToTargetLocation
         msg = vehicle.message_factory.set_position_target_local_ned_encode(
             0,       # time_boot_ms (not used)
@@ -76,6 +80,10 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
         for x in range(0,duration):
             vehicle.send_mavlink(msg)
             if x == duration-1:
+                right = 300
+                left = 300
+                front = 300
+                back = 300
                 time.sleep(duration)
                 point1 = LocationGlobalRelative(float(obstacledata['ddl']["lat"]),float(obstacledata['ddl']["lng"]), obstacledata['alt'])
                 time.sleep(1)
@@ -198,12 +206,12 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
 
     def objavoid():
         while True:
-            print("========================================")
-            print("sonar front",front)
-            print("sonar back",back)
-            print("sonar right",right)
-            print("sonar left",left)
-            print("*****************************************")
+            # print("========================================")
+            # print("sonar front",front)
+            # print("sonar back",back)
+            # print("sonar right",right)
+            # print("sonar left",left)
+            # print("*****************************************")
             if vehicle.location.global_relative_frame.alt >= float(obstacledata['alt']) * 0.95:
                 if (front<=obstacledist):
                     if (right>obstacledist):
@@ -212,6 +220,8 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
                         velocity_y = 2
                         velocity_z = 0
                         duration = 1
+                        right = 300
+                        front = 300
                         send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                     elif (left>obstacledist):
                         print("obstacle front and right go left")
@@ -219,6 +229,9 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
                         velocity_y = -2
                         velocity_z = 0
                         duration = 1
+                        right = 300
+                        left = 300
+                        front = 300
                         send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                     elif (right<=obstacledist) and (left<=obstacledist):
                         print("front,right and left obstacle go back ")
@@ -226,6 +239,10 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
                         velocity_y = 0
                         velocity_z = 0
                         duration = 1
+                        right = 300
+                        left = 300
+                        front = 300
+                        back = 300
                         #takeoff_alt = takeoff_alt+velocity_z*duration
                         send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                         #time.sleep(2)

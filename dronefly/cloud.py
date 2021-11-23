@@ -87,9 +87,9 @@ def Cloudint():
                 if message["path"] == "/altitude":
                     daltitude = message["data"]
                     __main__.__updatefromcloud("alt",daltitude)
-                elif message["path"] == "/dcl":
-                    dcl = message["data"]
-                    __main__.__updatefromcloud("dcl",dcl)
+                # elif message["path"] == "/dcl":
+                #     dcl = message["data"]
+                #     __main__.__updatefromcloud("dcl",dcl)
                 elif message["path"] == "/ddl":
                     ddl = message["data"]
                     __main__.__updatefromcloud("ddl",ddl)

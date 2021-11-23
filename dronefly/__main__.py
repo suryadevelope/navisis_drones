@@ -63,14 +63,14 @@ def vehicle_goto(lat,long,alt):
     vehicle.simple_goto(point1)
     checkheading=0
    
+    obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"],LocationGlobalRelative)
     while True:
         if checkheading<=5:
-            obstacle_avoid.obstacledataupdate(alt,vehicle.heading,lat,long)
+            obstacle_avoid.obstacledataupdate(alt,vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
             checkheading = checkheading+1
         currentDistance = vehicleinfo.get_distance_meters(point1,vehicle.location.global_relative_frame)
         #print("current distance: ", currentDistance,distanceToTargetLocation*.05,currentDistance<distanceToTargetLocation*.05)
         #print("time",currentDistance/2)
-        obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
         string = str(vehicle.location.global_relative_frame.lat)+","+str(vehicle.location.global_relative_frame.lon)
         cloud.__cloudupload("dcl",string+","+str(currentDistance)+","+str(distanceToTargetLocation))
         
@@ -79,7 +79,7 @@ def vehicle_goto(lat,long,alt):
             time.sleep(2)
             break
             
-        time.sleep(3)
+        time.sleep(2)
     streamurl = stream.startStream()
     point1 = LocationGlobalRelative(float(lat),float(long), 1.0)
     vehicle.simple_goto(point1)

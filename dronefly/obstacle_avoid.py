@@ -1,5 +1,4 @@
 from pymavlink import mavutil
-from dronekit import connect, VehicleMode, LocationGlobalRelative
 import time
 import RPi.GPIO as GPIO 
 from threading import Thread
@@ -10,6 +9,9 @@ GPIO.setmode(GPIO.BCM)
 
 obstacledist = 70
 vehicleheading = 0
+
+distance = 1
+distancespeed = 1
 
 RIGHTTRIG = 18  # Trigger pin of the Ultrasonic Sensor 
 RIGHTECHO = 23 #Echo pin of the Ultrasonic Sensor
@@ -55,37 +57,30 @@ def obstacledataupdate(alt,vehicleheading,latt,long):
     obstacledata['ddl']["lat"] = latt
     obstacledata['ddl']["lng"] = long
 
-def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
+def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long,LocationGlobalRelative):
     obstacledata['alt'] = alt
     obstacledata['vheading'] = vehicleheading
     obstacledata['ddl']["lat"] = latt
     obstacledata['ddl']["lng"] = long
 
     def send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration=0):
-        global right
-        global left
-        global front
-        global back
+       
         #global distanceToTargetLocation
         msg = vehicle.message_factory.set_position_target_local_ned_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
             mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame Needs to be MAV_FRAME_BODY_OFFSET_NED for forward/back left/right control.
-            0b0000111111000111, # type_mask
+            0b0000001000000000,#0b0000111111000111, # type_mask
             0, 0, 0, # x, y, z positions (not used)
             velocity_x, velocity_y, velocity_z, # m/s
             0, 0, 0, # x, y, z acceleration
-            int(obstacledata['vheading']), 0)
+            int(obstacledata['vheading']), 10)
         print(msg)
         for x in range(0,duration):
             vehicle.send_mavlink(msg)
             if x == duration-1:
-                right = 300
-                left = 300
-                front = 300
-                back = 300
                 time.sleep(duration)
-                point1 = LocationGlobalRelative(float(obstacledata['ddl']["lat"]),float(obstacledata['ddl']["lng"]), obstacledata['alt'])
+                point1 = LocationGlobalRelative(float(obstacledata['ddl']["lat"]),float(obstacledata['ddl']["lng"]), float(obstacledata['alt']))
                 time.sleep(1)
                 vehicle.simple_goto(point1)
             time.sleep(1)
@@ -212,33 +207,37 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long):
             # print("sonar right",right)
             # print("sonar left",left)
             # print("*****************************************")
+            global front
+            global right
+            global left
+            global back
             if vehicle.location.global_relative_frame.alt >= float(obstacledata['alt']) * 0.95:
                 if (front<=obstacledist):
                     if (right>obstacledist):
                         print("obstacle front go right")
                         velocity_x = 0
-                        velocity_y = 2
+                        velocity_y = distance
                         velocity_z = 0
-                        duration = 1
+                        duration = distancespeed
                         right = 300
                         front = 300
                         send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                     elif (left>obstacledist):
                         print("obstacle front and right go left")
                         velocity_x = 0
-                        velocity_y = -2
+                        velocity_y = -distance
                         velocity_z = 0
-                        duration = 1
+                        duration = distancespeed
                         right = 300
                         left = 300
                         front = 300
                         send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
                     elif (right<=obstacledist) and (left<=obstacledist):
                         print("front,right and left obstacle go back ")
-                        velocity_x = -2
+                        velocity_x = -distance
                         velocity_y = 0
                         velocity_z = 0
-                        duration = 1
+                        duration = distancespeed
                         right = 300
                         left = 300
                         front = 300

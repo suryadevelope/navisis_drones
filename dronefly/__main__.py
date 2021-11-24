@@ -8,6 +8,7 @@ import sys
 import obstacle_avoid
 
 
+cloud.__cloudupload("device_error",[200,"All OK AT INIT"])
 vehicle = "null"
 print('Connecting to vehicle on: /dev/ttyAMA0' )
 try:
@@ -65,7 +66,7 @@ def vehicle_goto(lat,long,alt):
    
     obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"],LocationGlobalRelative)
     while True:
-        if checkheading<=5:
+        if checkheading<=2:
             obstacle_avoid.obstacledataupdate(alt,vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
             checkheading = checkheading+1
         currentDistance = vehicleinfo.get_distance_meters(point1,vehicle.location.global_relative_frame)
@@ -122,8 +123,13 @@ def vehiclestart():
         cloud.__cloudupload("drive",0)
         cloud.__cloudupload("device_error",[400,"Distance to location is below 1 meter"])
         return
-    arm_and_takeoff(float(clouddata['alt']))
-    #vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
+
+    if float(vehicle.battery.voltage)>=10.4:
+        arm_and_takeoff(float(clouddata['alt']))
+    else:
+        cloud.__cloudupload("device_error",[401,"Battery is lower than 10.5 volts"])
+        cloud.__cloudupload("drive",0)
+
 
 def __updatefromcloud(type,data):# This function important for cloud onchange
    

@@ -20,7 +20,7 @@ print("GMT: "+time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT")
 cap = cv2.VideoCapture(0)
 
 # QR code detection object
-detector = cv2.QRCodeDetector()
+#detector = cv2.QRCodeDetector()
 app = Flask('__name__')
 
 streamexternaldata = {"cloudqrid":"null"}
@@ -80,7 +80,7 @@ def camerastream():
         elif np.sum(img) == 0:
             break;
         else:        
-            data, bbox, _ = detector.detectAndDecode(img)
+            #data, bbox, _ = detector.detectAndDecode(img)
             decodedObjects = pyzbar.decode(img)
 
             for decodedObject in decodedObjects:
@@ -141,8 +141,6 @@ def camerastream():
             if(cv2.waitKey(1) == ord("q")):
                 break
             # free camera object and exit
-            
-            
     cap.release()
     cv2.destroyAllWindows()
 

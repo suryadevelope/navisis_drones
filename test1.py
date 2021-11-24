@@ -60,6 +60,7 @@ def arm_and_takeoff(aTargetAltitude):
                 break
             time.sleep(1)
         
+print(vehicle.battery.voltage)
 #arm_and_takeoff(1)
 vehicle.airspeed = 5
 print("Take off complete")

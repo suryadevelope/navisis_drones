@@ -29,9 +29,9 @@ time.sleep(0.2)
 vehicle.groundspeed = 50
 time.sleep(0.2)
 print(vehicle)
-vehicle.parameters['LAND_SPEED'] = 40 ##Descent speed of 30cm/s
+vehicle.parameters['LAND_SPEED'] = 20 ##Descent speed of 30cm/s
 time.sleep(0.2)
-vehicle.parameters["WPNAV_SPEED"]=100
+vehicle.parameters["WPNAV_SPEED"]=500
 time.sleep(0.2)
 
 # #Create a message listener using the decorator.
@@ -64,7 +64,7 @@ def vehicle_goto(lat,long,alt):
     vehicle.simple_goto(point1)
     checkheading=0
    
-    obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"],LocationGlobalRelative)
+    #obstacle_avoid.start_ObstacleScann(vehicle,clouddata['alt'],vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"],LocationGlobalRelative)
     while True:
         if checkheading<=2:
             obstacle_avoid.obstacledataupdate(alt,vehicle.heading,clouddata['ddl']["lat"],clouddata['ddl']["lng"])
@@ -82,12 +82,12 @@ def vehicle_goto(lat,long,alt):
             
         time.sleep(2)
     streamurl = stream.startStream()
-    point1 = LocationGlobalRelative(float(lat),float(long), 1.0)
+    point1 = LocationGlobalRelative(float(lat),float(long), 1.5)
     vehicle.simple_goto(point1)
     while True:
         print(" Altitude: ", vehicle.location.global_relative_frame.alt)
         # Break and return from function just below target altitude.
-        if vehicle.location.global_relative_frame.alt <= 2.0:
+        if vehicle.location.global_relative_frame.alt <= 2.5:
             print("Reached QR target altitude")
             vehicleinfo.vehicle_Land(vehicle,VehicleMode,clouddata["qrid"])
             break

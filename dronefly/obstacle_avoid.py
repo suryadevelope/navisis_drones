@@ -74,7 +74,7 @@ def start_ObstacleScann(vehicle,alt,vehicleheading,latt,long,LocationGlobalRelat
             0, 0, 0, # x, y, z positions (not used)
             velocity_x, velocity_y, velocity_z, # m/s
             0, 0, 0, # x, y, z acceleration
-            int(obstacledata['vheading']), 10)
+            int(obstacledata['vheading']), 20)
         print(msg)
         for x in range(0,duration):
             vehicle.send_mavlink(msg)

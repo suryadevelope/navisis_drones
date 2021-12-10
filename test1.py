@@ -61,7 +61,7 @@ def arm_and_takeoff(aTargetAltitude):
             time.sleep(1)
         
 print(vehicle.battery.voltage)
-#arm_and_takeoff(1)
+arm_and_takeoff(1)
 vehicle.airspeed = 5
 print("Take off complete")
 
@@ -70,57 +70,66 @@ time.sleep(3)
 print("Vehicle going to the location")
 point1 = LocationGlobalRelative(float(latt),float(long), 1)
 distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_relative_frame)
-#vehicle.simple_goto(point1)
+vehicle.mode = VehicleMode("LAND")
 while True:
-    
-    currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
-    print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
-    if currentDistance<distanceToTargetLocation*.02:
-        print("Reached target location.")
-        time.sleep(2)
+    print(" Altitude: ", vehicle.location.global_relative_frame.alt)
+    # Break and return from function just below target altitude.
+    if vehicle.location.global_relative_frame.alt <=0:
+        print("Reached ground")
+        vehicle.close() 
         break
+    time.sleep(1)
+#vehicle.simple_goto(point1)
+# while True:
+    
+#     currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
+#     print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
+#     if currentDistance<distanceToTargetLocation*.02:
+#         print("Reached target location.")
+#         time.sleep(2)
+#         break
            
-    time.sleep(3)
+#     time.sleep(3)
         
-def decoder(image):
-    gray_img = cv2.cvtColor(image,0)
-    barcode = decode(gray_img)
+# def decoder(image):
+#     gray_img = cv2.cvtColor(image,0)
+#     barcode = decode(gray_img)
 
-    for obj in barcode:
-        points = obj.polygon
-        (x,y,w,h) = obj.rect
-        pts = np.array(points, np.int32)
-        pts = pts.reshape((-1, 1, 2))
-        cv2.polylines(image, [pts], True, (0, 255, 0), 3)
+#     for obj in barcode:
+#         points = obj.polygon
+#         (x,y,w,h) = obj.rect
+#         pts = np.array(points, np.int32)
+#         pts = pts.reshape((-1, 1, 2))
+#         cv2.polylines(image, [pts], True, (0, 255, 0), 3)
 
-        barcodeData = obj.data.decode("utf-8")
-        barcodeType = obj.type
-        string = "Data " + str(barcodeData) + " | Type " + str(barcodeType)
+#         barcodeData = obj.data.decode("utf-8")
+#         barcodeType = obj.type
+#         string = "Data " + str(barcodeData) + " | Type " + str(barcodeType)
         
-        cv2.putText(frame, string, (x,y), cv2.FONT_HERSHEY_SIMPLEX,0.8,(255,0,0), 2)
-        print("Barcode: "+barcodeData +" | Type: "+barcodeType)
-        while True :
-             if barcodeData == "surya":
-                 print(" Altitude: ", vehicle.location.global_relative_frame.alt)
-                 print("Vehicle is landing")
-                 break
+#         cv2.putText(frame, string, (x,y), cv2.FONT_HERSHEY_SIMPLEX,0.8,(255,0,0), 2)
+#         print("Barcode: "+barcodeData +" | Type: "+barcodeType)
+#         while True :
+#              if barcodeData == "surya":
+#                  print(" Altitude: ", vehicle.location.global_relative_frame.alt)
+#                  print("Vehicle is landing")
+#                  break
         
         
-        vehicle.mode = VehicleMode("LAND")
-        while True:
-            print(" Altitude: ", vehicle.location.global_relative_frame.alt)
-            # Break and return from function just below target altitude.
-            if vehicle.location.global_relative_frame.alt <=0:
-                print("Reached ground")
-                vehicle.close() 
-                break
-            time.sleep(1)
+#         vehicle.mode = VehicleMode("LAND")
+#         while True:
+#             print(" Altitude: ", vehicle.location.global_relative_frame.alt)
+#             # Break and return from function just below target altitude.
+#             if vehicle.location.global_relative_frame.alt <=0:
+#                 print("Reached ground")
+#                 vehicle.close() 
+#                 break
+#             time.sleep(1)
 
                
-cap = cv2.VideoCapture(0)
-while True:
-    ret, frame = cap.read()
-    decoder(frame)
-    cv2.imshow('Image', frame)
-    code = cv2.waitKey(1)
+# cap = cv2.VideoCapture(0)
+# while True:
+#     ret, frame = cap.read()
+#     decoder(frame)
+#     cv2.imshow('Image', frame)
+#     code = cv2.waitKey(1)
   

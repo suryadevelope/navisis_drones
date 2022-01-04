@@ -28,11 +28,11 @@ from pymavlink import mavutil
 from threading import Thread
 
 
-RX = 23
+RX = 6
 
 pi = pigpio.pi()
-#pi.bb_serial_read_close(RX)
-#pi.stop()q
+# pi.bb_serial_read_close(RX)
+# pi.stop()
 
 pi.set_mode(RX, pigpio.INPUT)
 pi.bb_serial_read_open(RX, 115200) 

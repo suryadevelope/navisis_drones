@@ -31,7 +31,7 @@ time.sleep(0.2)
 print(vehicle)
 vehicle.parameters['LAND_SPEED'] = 20 ##Descent speed of 30cm/s
 time.sleep(0.2)
-vehicle.parameters["WPNAV_SPEED"]=500
+vehicle.parameters["WPNAV_SPEED"]=300
 time.sleep(0.2)
 
 # #Create a message listener using the decorator.

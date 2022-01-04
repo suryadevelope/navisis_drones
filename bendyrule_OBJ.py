@@ -1,4 +1,4 @@
-"""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"""
+
 
 
 import cv2
@@ -13,8 +13,8 @@ from threading import Thread
 import time 
 
 
-latt = "17.462211"
-long = "78.595023"
+latt = "17.46195"
+long = "78.59281"
 alt = "1.5"
 
 GPIO.setwarnings(False) 
@@ -66,13 +66,15 @@ def measure():
     pulse_duration = pulse_end - pulse_start 
     distance = pulse_duration * 17150 
     distance = round(distance, 2) 
-    print(distance)
-    if(distance<250 and distance>5): #To filter out junk values 
-        dist1=distance 
-        sensor_data(dist1,4) #Sends measured distance(dist1) and orientation(0) as a mavlink message. 
-    else:
-        dist1 = 0
-        sensor_data(dist1,4) #Sends measured distance(dist1) and orientation(0) as a mavlink message. 
+    if vehicle.location.global_relative_frame.alt >= 1.2:
+
+        if(distance<250 and distance>5): #To filter out junk values 
+            print(distance)
+            dist1=distance 
+            sensor_data(dist1,4) #Sends measured distance(dist1) and orientation(0) as a mavlink message. 
+        else:
+            dist1 = 0
+            sensor_data(dist1,4) #Sends measured distance(dist1) and orientation(0) as a mavlink message. 
 
     return dist1 # Main code 
 
@@ -81,7 +83,7 @@ def objstart():
     while True:
         measure()
         time.sleep(0.2)
-Thread(target = objstart).start()
+
 
 
 
@@ -89,14 +91,13 @@ vehicle.airspeed = 5
 vehicle.groundspeed = 50
 vehicle.parameters['LAND_SPEED'] = 25 ##Descent speed of 30cm/s
 vehicle.parameters["WPNAV_SPEED"]=150
-vehicle.parameters["PRX_TYPE"]=2
-vehicle.parameters["OA_TYPE"]=1
+vehicle.parameters["PRX_TYPE"]=4
+vehicle.parameters["OA_TYPE"]=2
 vehicle.parameters["OA_BR_TYPE"]=1
-vehicle.parameters["OA_LOOKAHEAD"]=2
-time.sleep(50)
-vehicle.parameters["OA_BR_TYPE"]=2
+# vehicle.parameters["OA_LOOKAHEAD"]=2
+# time.sleep(50)
 vehicle.parameters["OA_DB_EXPIRE"]=10
-vehicle.parameters["OA_DB_QUEUE_SIZE"]=80
+vehicle.parameters["OA_DB_QUEUE_SIZE"]=100
 vehicle.parameters["OA_DB_OUTPUT"]=1
 
 
@@ -122,12 +123,12 @@ def arm_and_takeoff(aTargetAltitude):
             time.sleep(1)
 
         print("Taking off!")
-        vehicle.simple_takeoff(aTargetAltitude)  # Take off to target altitude
+        vehicle.simple_takeoff(float(aTargetAltitude))  # Take off to target altitude
         
         while True:
             print(" Altitude: ", vehicle.location.global_relative_frame.alt)
             # Break and return from function just below target altitude.
-            if vehicle.location.global_relative_frame.alt >= aTargetAltitude * 0.95:
+            if vehicle.location.global_relative_frame.alt >= float(aTargetAltitude) * 0.95:
                 print("Reached target altitude")
                 break
             time.sleep(1)
@@ -136,7 +137,7 @@ print(vehicle.battery.voltage)
 arm_and_takeoff(alt)
 vehicle.airspeed = 5
 print("Take off complete")
-
+Thread(target = objstart).start()
 # Hover for 10 seconds
 time.sleep(3)
 print("Vehicle going to the location")

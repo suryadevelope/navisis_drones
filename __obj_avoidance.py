@@ -5,9 +5,9 @@ import pigpio
 from threading import Thread
 import math
 
-latt = "17.462239"
-long = "78.595085"
-alt = 1.5
+latt = "17.461794"
+long = "78.5928"
+alt = 15.0
 
 RX = 23
 distanceToTargetLocation = 0
@@ -149,19 +149,19 @@ print("vehicle started ")
 
 arm_and_takeoff(alt)
 
-Thread(target = ultra).start()
+#Thread(target = ultra).start()
 time.sleep(2)
 print("Vehicle going to the location")
 point1 = LocationGlobalRelative(float(latt),float(long), alt)
 distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_relative_frame)
 
-vehicle.parameters["WPNAV_SPEED"]=150
+vehicle.parameters["WPNAV_SPEED"]=300
 vehicle.groundspeed=5
 time.sleep(1)
 vehicle.simple_goto(point1)
 
 while True:
-    #Thread(target = ultra).start()   
+    #ultra()   
     currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
     print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
     if currentDistance<distanceToTargetLocation*.02:
@@ -169,7 +169,7 @@ while True:
         time.sleep(2)
         break
            
-    time.sleep(1)
+    time.sleep(0.1)
 
 vehicle.groundspeed = 50
 time.sleep(2)

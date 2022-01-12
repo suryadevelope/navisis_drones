@@ -18,11 +18,23 @@ alt = 1.5
 RX = 6
 
 pi = pigpio.pi()
-#pi.bb_serial_read_close(RX)
-#pi.stop()q
 
-pi.set_mode(RX, pigpio.INPUT)
-pi.bb_serial_read_open(RX, 115200) 
+def pigpiodsetup():
+  pi = pigpio.pi()
+  pi.set_mode(RX, pigpio.INPUT)
+  pi.bb_serial_read_open(RX, 115200) 
+
+try:
+  pigpiodsetup()
+except Exception as e:
+  print("surya",e,str(e)=="'GPIO already in use'")
+  if str(e)== "'GPIO already in use'":
+      pi.bb_serial_read_close(RX)
+      pi.stop()
+      time.sleep(2)
+      pigpiodsetup()
+      print(e)
+
 
 stop = False
 
@@ -44,7 +56,7 @@ vehicle.parameters["OA_MARGIN_MAX"]=1.5
 # vehicle.parameters["OA_DB_EXPIRE"]=10
 # vehicle.parameters["OA_DB_QUEUE_SIZE"]=100
 # vehicle.parameters["OA_DB_OUTPUT"]=1
-UNIT16_MAX = 251
+UNIT16_MAX = 65535
 
 def send_distance_message(front):
    
@@ -58,17 +70,28 @@ def send_distance_message(front):
     
     ts = datetime.datetime.now().timestamp()
     print(ts)
-    msg = mavlink2.MAVLink_obstacle_distance_message(
-        int(ts), #time
-        1, #sensor type
-        abc, # abc is usually the array of 72 elements
-        15, #angular width
-        28, #min distance
-        250, #max distance
-        15,#https://mavlink.io/en/messages/common.html#OBSTACLE_DISTANCE
-        -40,
-        12
-        )
+    # msg = mavlink2.MAVLink_obstacle_distance_message(
+    #     int(ts), #time
+    #     1, #sensor type
+    #     abc, # abc is usually the array of 72 elements
+    #     15, #angular width
+    #     28, #min distance
+    #     250, #max distance
+    #     15,#https://mavlink.io/en/messages/common.html#OBSTACLE_DISTANCE
+    #     90,
+    #     12
+    #     )
+
+    msg = vehicle.message_factory.distance_sensor_encode(
+        int(ts),          # time since system boot
+        5,          # min distance cm
+        300,      # max distance cm
+        int(front),       # current distance, must be int
+        0,          # type = laser?
+        0,          # onboard id, not used
+        1, #direction
+        0           # covariance, not used
+    )
     time.sleep(0.1)
     if vehicle.location.global_relative_frame.alt  >= float(alt)-0.5:
         vehicle.send_mavlink(msg)
@@ -94,7 +117,7 @@ def getTFminiData():
             strength = recv[i+4] + recv[i+5] * 256
             if distance <= 1200 and strength < 2000:
               print(distance, strength)
-              if vehicle.location.global_relative_frame.alt >= float(alt)-0.5:
+              if vehicle.location.global_relative_frame.alt >= float(alt)-0.5 and int(distance)<=50:
                  send_distance_message(distance)
             # else:
             #   raise ValueError('distance error: %d' % distance)	
@@ -157,7 +180,7 @@ def get_distance_meters(targetLocation,currentLocation):
 
 
 print(vehicle.battery.voltage)
-arm_and_takeoff(alt)
+#arm_and_takeoff(alt)
 vehicle.airspeed = 5
 print("Take off complete")
 

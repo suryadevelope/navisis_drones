@@ -11,8 +11,8 @@ from pymavlink.dialects.v20 import ardupilotmega as mavlink2
 
 
 
-latt = "17.461918"
-long = "78.592785"
+latt = "17.461773"
+long = "78.592902"
 alt = 1.5
 
 RX = 6
@@ -70,28 +70,28 @@ def send_distance_message(front):
     
     ts = datetime.datetime.now().timestamp()
     print(ts)
-    # msg = mavlink2.MAVLink_obstacle_distance_message(
-    #     int(ts), #time
-    #     1, #sensor type
-    #     abc, # abc is usually the array of 72 elements
-    #     15, #angular width
-    #     28, #min distance
-    #     250, #max distance
-    #     15,#https://mavlink.io/en/messages/common.html#OBSTACLE_DISTANCE
-    #     90,
-    #     12
-    #     )
+    msg = mavlink2.MAVLink_obstacle_distance_message(
+        int(ts), #time
+        1, #sensor type
+        abc, # abc is usually the array of 72 elements
+        15, #angular width
+        28, #min distance
+        250, #max distance
+        15,#https://mavlink.io/en/messages/common.html#OBSTACLE_DISTANCE
+        90,
+        12
+        )
 
-    msg = vehicle.message_factory.distance_sensor_encode(
-        int(ts),          # time since system boot
-        5,          # min distance cm
-        300,      # max distance cm
-        int(front),       # current distance, must be int
-        0,          # type = laser?
-        0,          # onboard id, not used
-        1, #direction
-        0           # covariance, not used
-    )
+    # msg = vehicle.message_factory.distance_sensor_encode(
+    #     int(ts),          # time since system boot
+    #     5,          # min distance cm
+    #     300,      # max distance cm
+    #     int(front),       # current distance, must be int
+    #     0,          # type = laser?
+    #     0,          # onboard id, not used
+    #     1, #direction
+    #     0           # covariance, not used
+    # )
     time.sleep(0.1)
     if vehicle.location.global_relative_frame.alt  >= float(alt)-0.5:
         vehicle.send_mavlink(msg)
@@ -103,7 +103,7 @@ def send_distance_message(front):
 def getTFminiData():
   while True:
    
-    time.sleep(0.05)	#change the value if needed
+    #time.sleep(0.05)	#change the value if needed
     (count, recv) = pi.bb_serial_read(RX)
     if count > 8:
       for i in range(0, count-9):
@@ -117,11 +117,9 @@ def getTFminiData():
             strength = recv[i+4] + recv[i+5] * 256
             if distance <= 1200 and strength < 2000:
               print(distance, strength)
-              if vehicle.location.global_relative_frame.alt >= float(alt)-0.5 and int(distance)<=50:
+              if vehicle.location.global_relative_frame.alt >= float(alt)-0.5 :
                  send_distance_message(distance)
-            # else:
-            #   raise ValueError('distance error: %d' % distance)	
-            # i = i + 9
+            
 
 
 def arm_and_takeoff(aTargetAltitude):
@@ -165,8 +163,11 @@ if __name__ == '__main__':
         getTFminiData()
       except:  
           print("exception")
+          pi = pigpio.pi()
           pi.bb_serial_read_close(RX)
           pi.stop()
+          pigpiodsetup()
+          print(e)
         
   Thread(target = ultra).start()
   
@@ -180,7 +181,7 @@ def get_distance_meters(targetLocation,currentLocation):
 
 
 print(vehicle.battery.voltage)
-#arm_and_takeoff(alt)
+arm_and_takeoff(alt)
 vehicle.airspeed = 5
 print("Take off complete")
 
@@ -190,6 +191,7 @@ print("Vehicle going to the location")
 point1 = LocationGlobalRelative(float(latt),float(long), alt)
 distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_relative_frame)
 vehicle.simple_goto(point1)
+
 while True:
     currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
     print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
@@ -197,7 +199,8 @@ while True:
         print("Reached target location.")
         #time.sleep(1)
         break
-    time.sleep(0.3)
+    time.sleep(2)
+
 vehicle.mode = VehicleMode("LAND")
 while True:
     print(" Altitude: ", vehicle.location.global_relative_frame.alt)

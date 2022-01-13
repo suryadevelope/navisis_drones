@@ -9,7 +9,7 @@ latt = "17.461794"
 long = "78.5928"
 alt = 15.0
 
-RX = 23
+RX = 6
 distanceToTargetLocation = 0
 pi = pigpio.pi()
 
@@ -33,7 +33,7 @@ except Exception as e:
 
 def getTFminiData():
       while True:
-        time.sleep(0.05)	#change the value if needed
+        #time.sleep(0.05)	#change the value if needed
         (count, recv) = pi.bb_serial_read(RX)
         if count > 8:
           for i in range(0, count-9):
@@ -47,7 +47,7 @@ def getTFminiData():
                 strength = recv[i+4] + recv[i+5] * 256
                 if distance <= 1200 and strength < 2000:
                   print(distance, strength)
-                  if vehicle.location.global_relative_frame.alt >= alt:
+                  if vehicle.location.global_relative_frame.alt <= alt:
                       if distance <=400:
                         velocity_x = 0
                         velocity_y = -1
@@ -55,10 +55,7 @@ def getTFminiData():
                         duration = 1
                         
                         send_body_ned_velocity(velocity_x, velocity_y, velocity_z, duration)
-                        
-                # else:
-                #   raise ValueError('distance error: %d' % distance)	
-                # i = i + 9
+                   
 
 
 
@@ -142,14 +139,17 @@ def ultra():
     getTFminiData()
   except KeyboardInterrupt:  
       print("exception")
+      pi = pigpio.pi()
       pi.bb_serial_read_close(RX)
       pi.stop()
+      pigpiodsetup()
+      print(e)
     
 print("vehicle started ")
 
-arm_and_takeoff(alt)
+#arm_and_takeoff(alt)
 
-#Thread(target = ultra).start()
+Thread(target = ultra).start()
 time.sleep(2)
 print("Vehicle going to the location")
 point1 = LocationGlobalRelative(float(latt),float(long), alt)
@@ -169,7 +169,7 @@ while True:
         time.sleep(2)
         break
            
-    time.sleep(0.1)
+    time.sleep(1)
 
 vehicle.groundspeed = 50
 time.sleep(2)

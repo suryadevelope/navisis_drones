@@ -82,16 +82,7 @@ def send_distance_message(front):
         12
         )
 
-    # msg = vehicle.message_factory.distance_sensor_encode(
-    #     int(ts),          # time since system boot
-    #     5,          # min distance cm
-    #     300,      # max distance cm
-    #     int(front),       # current distance, must be int
-    #     0,          # type = laser?
-    #     0,          # onboard id, not used
-    #     1, #direction
-    #     0           # covariance, not used
-    # )
+   
     time.sleep(0.1)
     if vehicle.location.global_relative_frame.alt  >= float(alt)-0.5:
         vehicle.send_mavlink(msg)

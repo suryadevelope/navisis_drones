@@ -260,7 +260,7 @@ vehicle.parameters['LAND_SPEED'] = 5 ##Descent speed of 30cm/s
 Thread(target = campare).start()
 
 time.sleep(5)
-arm_and_takeoff(alt)
+#arm_and_takeoff(alt)
 
 time.sleep(1)
 print("Vehicle going to the location")

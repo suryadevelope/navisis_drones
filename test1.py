@@ -20,12 +20,12 @@ connection_string = "/dev/ttyAMA0"#args.connect
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=921600)
 vehicle.wait_ready(True, raise_exception=False)
-latt = "17.462211"
-long = "78.595023"
+latt = "17.635157"
+long = "78.451"
 vehicle.airspeed = 5
 vehicle.groundspeed = 50
 vehicle.parameters['LAND_SPEED'] = 25 ##Descent speed of 30cm/s
-vehicle.parameters["WPNAV_SPEED"]=150
+vehicle.parameters["WPNAV_SPEED"]=100
 
 
 
@@ -61,7 +61,7 @@ def arm_and_takeoff(aTargetAltitude):
             time.sleep(1)
         
 print(vehicle.battery.voltage)
-arm_and_takeoff(1)
+arm_and_takeoff(5)
 vehicle.airspeed = 5
 print("Take off complete")
 
@@ -70,6 +70,19 @@ time.sleep(3)
 print("Vehicle going to the location")
 point1 = LocationGlobalRelative(float(latt),float(long), 1)
 distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_relative_frame)
+
+vehicle.simple_goto(point1)
+
+while True:
+    
+    currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
+    print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
+    if currentDistance<distanceToTargetLocation*.02:
+        print("Reached target location.")
+        time.sleep(2)
+        break
+
+time.sleep(3)
 vehicle.mode = VehicleMode("LAND")
 while True:
     print(" Altitude: ", vehicle.location.global_relative_frame.alt)

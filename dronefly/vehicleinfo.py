@@ -64,6 +64,7 @@ def vehicle_Land(vehicle,VehicleMode,qrcodeid):
         if str(vehicledata["QRCODEDATA"]) == str(qrcodeid):
             break;
         time.sleep(1)
+    # time.sleep(2)
     return True
     
     # vehicle.mode = VehicleMode("LAND")

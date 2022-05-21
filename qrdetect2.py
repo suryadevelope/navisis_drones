@@ -15,16 +15,16 @@ while True:
     # get the image
     _, img = cap.read()
         # Reading image
-    font = cv2.FONT_HERSHEY_COMPLEX
-    # Converting image to a binary image
-    # ( black and white only image).
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, threshold = cv2.threshold(img_gray, 110, 255, cv2.THRESH_BINARY)
+    # font = cv2.FONT_HERSHEY_COMPLEX
+    # # Converting image to a binary image
+    # # ( black and white only image).
+    # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # _, threshold = cv2.threshold(img_gray, 110, 255, cv2.THRESH_BINARY)
 
-    # Detecting contours in image.
-    contours, _ = cv2.findContours(threshold, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    # get bounding box coords and data
-    data, bbox, _ = detector.detectAndDecode(img)
+    # # Detecting contours in image.
+    # contours, _ = cv2.findContours(threshold, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    # # get bounding box coords and data
+    # data, bbox, _ = detector.detectAndDecode(img)
    
     def show_image(image):
         cv2.imshow('image',image)
@@ -32,11 +32,11 @@ while True:
         if c >= 0 : return -1
         return 0
 
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, im = cv2.threshold(img_gray, 100, 255, cv2.THRESH_BINARY_INV)
-    contours, hierarchy  = cv2.findContours(im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    img = cv2.drawContours(im, contours, -1, (0,255,75), 2)
-    show_image(img)
+    # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # ret, im = cv2.threshold(img_gray, 100, 255, cv2.THRESH_BINARY_INV)
+    # contours, hierarchy  = cv2.findContours(im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # img = cv2.drawContours(im, contours, -1, (0,255,75), 2)
+    # show_image(img)
     
     # for cnt in contours:
 

@@ -114,7 +114,7 @@ def vehicle_goto(lat, long, alt,points,index):
         while True:
             print(" Altitude: ", vehicle.location.global_relative_frame.alt)
             # Break and return from function just below target altitude.
-            if vehicle.location.global_relative_frame.alt <= 2.5:
+            if vehicle.location.global_relative_frame.alt <= 2.0:
                 print("Reached QR target altitude")
                 break
             time.sleep(1)
@@ -136,7 +136,7 @@ def vehicle_goto(lat, long, alt,points,index):
                 break
             time.sleep(1)
         i = index+1
-        vehicle_goto(float(points[i][0].split(",")[0]), float(points[i][0].split(",")[1]), aTargetAltitude,points,i)
+        vehicle_goto((points[i][0]), (points[i][1]), float(clouddata['alt']),points,i)
 
 
 
@@ -161,10 +161,10 @@ def vehiclestart(points,index):
             # Break and return from function just below target altitude.
             if vehicle.location.global_relative_frame.alt >= aTargetAltitude * 0.95:
                 print("Reached target altitude")
-                vehicle_goto(float(locpoints[i][0].split(",")[0]), float(locpoints[i][0].split(",")[1]), aTargetAltitude,locpoints,i)
+                vehicle_goto(locpoints[i][0], locpoints[i][1], aTargetAltitude,locpoints,i)
                 break
             time.sleep(1)
-    point11 = LocationGlobalRelative(float(points[index][0].split(",")[0]), float(points[index][0].split(",")[1]), clouddata['alt'])
+    point11 = LocationGlobalRelative(points[index][0], points[index][1], clouddata['alt'])
     distanceToTargetLocation1 = vehicleinfo.get_distance_meters(
         point11, vehicle.location.global_relative_frame)
     if(distanceToTargetLocation1 <= 1):
@@ -203,6 +203,7 @@ def rearrangepoints(pointsarray):
     sortindex = shortdist.driver(finalformatedpointsarray)
     np.array(finalformatedpointsarray)
     finalformatedpointsarray =[finalformatedpointsarray[i-1] for i in sortindex["path"]]
+    return finalformatedpointsarray
 
 
 def get_key(val):
@@ -234,9 +235,10 @@ def __updatefromcloud():  # This function important for cloud onchange
                 # print(clouddata)
                 # stream.streamfetchdata("cloudqrid",clouddata["qrid"])
             elif int(clouddata["drive"]) == 1:
-                rearrangepoints(clouddata["ddl"])
+                xx = rearrangepoints(clouddata["ddl"])
+                print(xx)
 
-                vehiclestart(finalformatedpointsarray,0)
+                vehiclestart(xx,0)
                 # print(clouddata['ddl']['lat'])
             
 

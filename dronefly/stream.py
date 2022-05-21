@@ -169,7 +169,7 @@ def streamINT():
     def video():
         return Response(streamcamera(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-    app.run(host='127.0.0.1', port='5000', debug=False)
+    app.run(host='localhost', port='5500', debug=False)
   
 
 

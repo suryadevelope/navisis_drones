@@ -59,6 +59,7 @@ def Cloudint():
     Dstatus = db.child("device/"+macaddress+"/Dstatus").get().val()
     QRid = db.child("device/"+macaddress+"/id").get().val()
     vconnect = db.child("device/"+macaddress+"/vconnect").get().val()
+    vrtlmode = db.child("device/"+macaddress+"/rtl").get().val()
 
     if daltitude == None:
         db.child("device/"+macaddress+"/altitude").set("0")
@@ -69,6 +70,7 @@ def Cloudint():
         db.child("device/"+macaddress+"/Dstatus").set(["ONLINE",formatted_time_in_utc])
         db.child("device/"+macaddress+"/id").set("null")
         db.child("device/"+macaddress+"/vconnect").set(0)
+        db.child("device/"+macaddress+"/rtl").set(0)
         dictionary["altitude"] = "0"
         dictionary["dcl"] = "0,0"
         dictionary["ddl"] = "0,0"
@@ -76,6 +78,7 @@ def Cloudint():
         dictionary["drive"] = 0
         dictionary["id"] = "null"
         dictionary["vconnect"] = 0
+        dictionary["rtl"] = 0
         dictionary["Dstatus"] = ["ONLINE",formatted_time_in_utc]
         time.sleep(0.2)
     else:
@@ -85,6 +88,7 @@ def Cloudint():
         dictionary["dinfo"] = dinfo
         dictionary["drive"] = ddrive
         dictionary["id"] = QRid
+        dictionary["vrtl"] = vrtlmode
         dictionary["vconnect"] = vconnect
         dictionary["Dstatus"] = Dstatus
 
@@ -97,6 +101,10 @@ def Cloudint():
         db.child("device/"+macaddress+"/drive").set(0)
         ddrive = 0
         dictionary["drive"] = ddrive
+
+    if int(vrtlmode) == 1:
+        db.child("device/"+macaddress+"/rtl").set(0)
+        dictionary["vrtl"] = 0
 
 
     time.sleep(1)
@@ -137,6 +145,9 @@ def Cloudint():
                 elif message["path"] == "/id":
                     qrcodeid = message["data"]
                     dictionary["id"] = qrcodeid
+                elif message["path"] == "/rtl":
+                    vrtlmode = message["data"]
+                    dictionary["vrtl"] = vrtlmode
 
                 elif message["path"] == "/Dstatus/0":
                     Dstatus = message["data"]
@@ -161,7 +172,7 @@ def Cloudint():
         my_stream = db.child("device/"+macaddress).stream(stream_handler)
     stream.streamfetchdata("cloudqrid",QRid)
     writetofile(dictionary)
-    return [daltitude,dcl,ddl,ddrive,QRid]
+    return [daltitude,dcl,ddl,ddrive,QRid,vrtlmode]
 
     ############################INIT DEVICE#####################################
 

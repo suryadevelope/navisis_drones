@@ -12,11 +12,10 @@ import time
 import vehicleinfo
 from datetime import datetime
 
-
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 print("GMT: "+time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT")
-
+print(now.utcnow().strftime('%H:%M:%S'))
 cap = cv2.VideoCapture(0)
 
 # QR code detection object
@@ -31,45 +30,43 @@ def streamfetchdata(condition,val):
 
 def startStream():
     Thread(target = camerastream).start()
-    url = "https://api.remot3.it/apv/v27/device/connect"
+    key_id = "2FLAAMMMAV7RZNCTGRH2"
+    key_secret_id = "ZIwewYGla/56L50N7ZppXGVIZ8TAImI7ucyZ/+Q0"
+    body =  {"query":"#Proxy connections can be generated to individual services and the unique\n#address will be provided in the host and port fields.\n#\n#hostIP values could contain\n#\n#0.0.0.0 for fully public connections available to user\n#\n#255.255.255.255 to allow only the first accessing IP to \"Latch\" the connection.\n#Blocking all others\n#\n#A unique public IP address to only allow that IP to access the connection\n\nmutation GetConnection($serviceId: String!, $hostIP: String!) {\n\tconnect(serviceId: $serviceId, hostIP: $hostIP) {\n\t\tid\n\t\tcreated\n\t\thost\n\t\tport\n\t\treverseProxy\n\t\ttimeout\n\t}\n}\n","variables":{"serviceId":"80:00:00:00:01:1C:06:C2","hostIP":"0.0.0.0"},"operationName":"GetConnection"}
 
-    payload = {
-    "deviceaddress":"80:00:00:00:01:1C:06:C2",
-    "wait": "true",
-    "hostip": "0.0.0.0"
-    }
-
-
-    content_length_header = str(len(json.dumps(payload)))
-    key_id = "D7P5VZB6KJCISDNSARN4"
-    key_secret_id = "D7f+jzFBmRJos75Q9B1iJdDEu6EiSWuMdFUQPgaI"
-    auth1 =HTTPSignatureAuth(algorithm="hmac-sha256",
-            key=b64decode(key_secret_id),
-            key_id=key_id,
-            headers=[
-                '(request-target)', 'host',
-                'date', 'content-type',
-                'content-length'
-            ])
+    host = 'api.remote.it'
+    url_path = '/graphql/v1'
+    content_type_header = 'application/json'
+    content_length_header = str(len(body))
 
     headers = {
-    'path': "/apv/v27/device/connect",
-    'host': 'api.remot3.it',
-    'content-type': 'application/json',
+        'host': host,
+        'path': url_path,
+        'content-type': content_type_header,
         'content-length': content_length_header,
-        "Date":str(time.strftime("%a, %d %b %Y ", time.gmtime())+current_time+" GMT"),
-        "developerkey":"N0JGMjU3QUItRjA2Qy00QzJDLUEyNUEtMTU2QjkxRjE1QkEw"
     }
-    response = requests.post(url,auth=auth1,json=payload, headers=headers)
 
-    #print(response.headers,json.loads(response.text)["connection"]["proxy"]+"/video")
-    print(json.loads(response.text))
-    if(json.loads(response.text)["status"]):
-        print("error with remote api")
+    response = requests.post('https://' + host + url_path,
+                            json=body,
+                            auth=HTTPSignatureAuth(algorithm="hmac-sha256",
+                                                    key=b64decode(key_secret_id),
+                                                    key_id=key_id,
+                                                    headers=[
+                                                        '(request-target)', 'host',
+                                                        'date', 'content-type',
+                                                        'content-length'
+                                                    ]),
+                            headers=headers)
+
+    if response.status_code == 200:
+        print(json.loads(response.text)["data"]["connect"]["host"]+":"+str(json.loads(response.text)["data"]["connect"]["port"])+"/video")
+        return json.loads(response.text)["data"]["connect"]["host"]+":"+str(json.loads(response.text)["data"]["connect"]["port"])+"/video"
+    
+    else:
+        print(response.status_code)
         return ""
-    elif json.loads(response.text)["connection"]:
-         return json.loads(response.text)["connection"]["proxy"]+"/video"
     return ""
+    
 
 streamdata={"ret":"null","img":"null"}
 def camerastream():
@@ -148,6 +145,17 @@ def camerastream():
     cap.release()
     cv2.destroyAllWindows()
 
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    
+@app.get('/shutdown')
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
+
 
 def streamcamera():
     while True:
@@ -169,7 +177,7 @@ def streamINT():
     def video():
         return Response(streamcamera(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-    app.run(host='localhost', port='5500', debug=False)
+    app.run(host='127.0.0.1', port='5000', debug=False)
   
 
 

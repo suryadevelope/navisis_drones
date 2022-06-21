@@ -52,6 +52,10 @@ def info(vehicle):
         }
     return s
 
+def vrtl(vehicle):
+    print("Returning to Launch")
+    vehicle.mode = VehicleMode("RTL")
+
 def get_distance_meters(targetLocation,currentLocation):
     dLat=targetLocation.lat - currentLocation.lat
     dLon=targetLocation.lon - currentLocation.lon
@@ -59,12 +63,12 @@ def get_distance_meters(targetLocation,currentLocation):
     return math.sqrt((dLon*dLon)+(dLat*dLat))*1.113195e5
 
 def vehicle_Land(vehicle,VehicleMode,qrcodeid):
-    while True:
-        print("landing",str(vehicledata["QRCODEDATA"]) ,str(qrcodeid),str(vehicledata["QRCODEDATA"]) == str(qrcodeid))
-        if str(vehicledata["QRCODEDATA"]) == str(qrcodeid):
-            break;
-        time.sleep(1)
-    # time.sleep(2)
+    # while True:
+    #     print("landing",str(vehicledata["QRCODEDATA"]) ,str(qrcodeid),str(vehicledata["QRCODEDATA"]) == str(qrcodeid))
+    #     if str(vehicledata["QRCODEDATA"]) == str(qrcodeid):
+    #         break;
+    #     time.sleep(1)
+    time.sleep(2)
     return True
     
     # vehicle.mode = VehicleMode("LAND")

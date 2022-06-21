@@ -14,6 +14,7 @@ import shortdist
 
 cloud.__cloudupload("device_error", [200, "All OK AT INIT"])
 vehicle = "null"
+streamurl = stream.startStream()
 print('Connecting to vehicle on: /dev/ttyAMA0')
 try:
     vehicle = connect("/dev/ttyAMA0", wait_ready=True, baud=921600)
@@ -36,7 +37,7 @@ time.sleep(0.2)
 print(vehicle)
 vehicle.parameters['LAND_SPEED'] = 30  # Descent speed of 30cm/s
 time.sleep(0.2)
-vehicle.parameters["WPNAV_SPEED"] = 500
+vehicle.parameters["WPNAV_SPEED"] = 200
 time.sleep(0.2)
 
 finalformatedpointsarray = []
@@ -59,6 +60,7 @@ clouddata['dcl'] = cloudd[1]
 clouddata['ddl'] = cloudd[2]
 clouddata['drive'] = cloudd[3]
 clouddata['qrid'] = cloudd[4]
+clouddata['vrtl'] = cloudd[5]
 
 print("ok surya")
 
@@ -232,13 +234,15 @@ def __updatefromcloud():  # This function important for cloud onchange
                 clouddata["dcl"] = jsondata["dcl"]
                 clouddata['ddl'] = jsondata["ddl"]
                 clouddata["qrid"] = jsondata["id"]
+                clouddata["vrtl"] = jsondata["vrtl"]
                 # print(clouddata)
                 # stream.streamfetchdata("cloudqrid",clouddata["qrid"])
             elif int(clouddata["drive"]) == 1:
                 xx = rearrangepoints(clouddata["ddl"])
                 print(xx)
-
+                cloud.__cloudupload("rtl", 0)
                 vehiclestart(xx,0)
+                break
                 # print(clouddata['ddl']['lat'])
             
 

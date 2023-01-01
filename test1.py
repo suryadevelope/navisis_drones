@@ -99,7 +99,7 @@ while True:
     while vehicle.armed:
         print(" Waiting for disarming...")
         vehicle.armed = False
-        vehicle.mode = VehicleMode("STABLISE")
+        vehicle.mode = VehicleMode("STABILIZE")
         time.sleep(1)
         
 vehicle.close()

@@ -20,8 +20,8 @@ connection_string = "/dev/ttyAMA0"#args.connect
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, baud=921600)
 vehicle.wait_ready(True, raise_exception=False)
-latt = "17.635157"
-long = "78.451"
+latt = "17.418888"
+long ="78.654836"
 vehicle.airspeed = 5
 vehicle.groundspeed = 50
 vehicle.parameters['LAND_SPEED'] = 25 ##Descent speed of 30cm/s
@@ -61,14 +61,14 @@ def arm_and_takeoff(aTargetAltitude):
             time.sleep(1)
         
 print(vehicle.battery.voltage)
-arm_and_takeoff(5)
+arm_and_takeoff(1.5)
 vehicle.airspeed = 5
 print("Take off complete")
 
 # Hover for 10 seconds
-time.sleep(3)
+# time.sleep(3)
 print("Vehicle going to the location")
-point1 = LocationGlobalRelative(float(latt),float(long), 1)
+point1 = LocationGlobalRelative(float(latt),float(long), 3)
 distanceToTargetLocation = get_distance_meters(point1,vehicle.location.global_relative_frame)
 
 vehicle.simple_goto(point1)
@@ -77,7 +77,7 @@ while True:
     
     currentDistance = get_distance_meters(point1,vehicle.location.global_relative_frame)
     print("current distance: ", currentDistance,distanceToTargetLocation*.02,currentDistance<distanceToTargetLocation*.02)
-    if currentDistance<distanceToTargetLocation*.02:
+    if (currentDistance-0.5)<distanceToTargetLocation:
         print("Reached target location.")
         time.sleep(2)
         break
@@ -87,11 +87,23 @@ vehicle.mode = VehicleMode("LAND")
 while True:
     print(" Altitude: ", vehicle.location.global_relative_frame.alt)
     # Break and return from function just below target altitude.
-    if vehicle.location.global_relative_frame.alt <=0:
+    if vehicle.location.global_relative_frame.alt <=0.74:
         print("Reached ground")
-        vehicle.close() 
+        time.sleep(1)
         break
     time.sleep(1)
+
+while True:
+    vehicle.armed = False
+        # Confirm vehicle armed before attempting to take off
+    while vehicle.armed:
+        print(" Waiting for disarming...")
+        vehicle.armed = False
+        vehicle.mode = VehicleMode("STABLISE")
+        time.sleep(1)
+        
+vehicle.close()
+print("code completed")
 #vehicle.simple_goto(point1)
 # while True:
     

@@ -20,8 +20,8 @@
 `WantedBy=multi-user.target`
 
 <br>Enable and start the service:</b> <br>
-`sudo systemctl enable dronefly.service
-sudo systemctl start dronefly.service`
+`sudo systemctl enable dronefly.service`<br>
+`sudo systemctl start dronefly.service`
 
 <br>Stop the service:</b> <br>
 `sudo systemctl stop dronefly.service`

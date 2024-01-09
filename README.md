@@ -9,7 +9,10 @@
 `After=network.target`<br>
 <br>
 `[Service]`<br>
+if you want python script to run this
 `ExecStart=/usr/bin/python3 /home/pi/Desktop/autocode/dronefly/__main__.py`<br>
+else you want bash script to run this
+`ExecStart=/bin/bash /home/pi/Desktop/autocode/dronefly/startup.sh`<br>
 `WorkingDirectory=/home/pi/Desktop/autocode/dronefly`<br>
 `StandardOutput=file:/home/pi/Desktop/output.log`<br>
 `StandardError=file:/home/pi/Desktop/error.log`<br>
